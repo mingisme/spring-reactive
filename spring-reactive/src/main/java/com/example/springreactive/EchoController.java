@@ -9,6 +9,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 public class EchoController {
@@ -53,4 +55,20 @@ public class EchoController {
                 .bodyToMono(String.class)
                 .map(response -> "Character data: " + response);
     }
+
+    @GetMapping("future")
+    public Mono<String> future(@RequestParam String name) throws ExecutionException, InterruptedException {
+        CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(10000);
+                System.out.println("sleep 3000 ms");
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            return "hello, " + name;
+        });
+//        System.out.println(future.get());
+        return Mono.fromFuture(future);
+    }
+
 }
